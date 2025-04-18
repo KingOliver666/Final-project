@@ -1,0 +1,19 @@
+Downloading builder script: 100%|█████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 7.95k/7.95k [00:00<00:00, 11.1MB/s]
+Traceback (most recent call last):
+  File "C:\Users\16343\Desktop\Final project\bart-base-scratch.py", line 36, in <module>
+    bertscore_metric = evaluate.load("bertscore")
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\16343\anaconda3\Lib\site-packages\evaluate\loading.py", line 748, in load
+    evaluation_module = evaluation_module_factory(
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\16343\anaconda3\Lib\site-packages\evaluate\loading.py", line 680, in evaluation_module_factory
+    raise e1 from None
+  File "C:\Users\16343\anaconda3\Lib\site-packages\evaluate\loading.py", line 639, in evaluation_module_factory
+    ).get_module()
+      ^^^^^^^^^^^^
+  File "C:\Users\16343\anaconda3\Lib\site-packages\evaluate\loading.py", line 489, in get_module
+    local_imports = _download_additional_modules(
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\16343\anaconda3\Lib\site-packages\evaluate\loading.py", line 265, in _download_additional_modules
+    raise ImportError(
+ImportError: To be able to use evaluate-metric/bertscore, you need to install the following dependencies['bert_score'] using 'pip install bert_score' for instance'
