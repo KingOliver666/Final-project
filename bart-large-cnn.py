@@ -13,13 +13,13 @@ INPUT_CSV       = "filtered_combined_news_text.csv"
 OUTPUT_CSV      = "game_news_full_summaries_bart_batched.csv"
 MODEL_NAME      = "facebook/bart-large-cnn"
 DEVICE          = "cuda" if torch.cuda.is_available() else "cpu"
-CHUNK_SIZE      = 1024     # tokens per chunk
+CHUNK_SIZE      = 512     # tokens per chunk
 STRIDE          = 128      # overlap
-BATCH_SIZE      = 4        # number of chunks per batch
-STAGE1_MAX_SUM  = 150
-STAGE1_MIN_SUM  = 40
-STAGE2_MAX_SUM  = 200
-STAGE2_MIN_SUM  = 60
+BATCH_SIZE      = 8      # number of chunks per batch
+STAGE1_MAX_SUM  = 250
+STAGE1_MIN_SUM  = 80
+STAGE2_MAX_SUM  = 350
+STAGE2_MIN_SUM  = 120
 
 # ─── Load Model & Tokenizer ────────────────────────────────────────────────────
 
