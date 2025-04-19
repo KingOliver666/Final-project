@@ -1,0 +1,36 @@
+Map:   0%|                                                                                                                                                                                       | 0/287113 [00:00<?, ? examples/s]C:\Users\16343\anaconda3\Lib\site-packages\transformers\tokenization_utils_base.py:3980: UserWarning: `as_target_tokenizer` is deprecated and will be removed in v5 of Transformers. You can tokenize your labels by using the argument `text_target` of the regular `__call__` method (either in the same call as your input texts if you use the same keyword arguments, or in a separate call.
+  warnings.warn(
+Map:  54%|███████████████████████████████████████████████████████████████████████████████████████████▏                                                                              | 154000/287113 [32:34<28:09, 78.78 examples/s]
+Traceback (most recent call last):
+  File "C:\Users\16343\anaconda3\Lib\site-packages\datasets\arrow_dataset.py", line 3531, in _map_single
+    writer.write_batch(batch)
+  File "C:\Users\16343\anaconda3\Lib\site-packages\datasets\arrow_writer.py", line 606, in write_batch
+    arrays.append(pa.array(typed_sequence))
+                  ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "pyarrow\\array.pxi", line 252, in pyarrow.lib.array
+  File "pyarrow\\array.pxi", line 114, in pyarrow.lib._handle_arrow_array_protocol
+  File "C:\Users\16343\anaconda3\Lib\site-packages\datasets\arrow_writer.py", line 229, in __arrow_array__
+    out = pa.array(cast_to_python_objects(data, only_1d_for_numpy=True))
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+KeyboardInterrupt
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\16343\Desktop\Final project\bart-base-scratch.py", line 192, in <module>
+    main()  # <- Entry point: run all steps when the script is executed
+    ^^^^^^
+  File "C:\Users\16343\Desktop\Final project\bart-base-scratch.py", line 72, in main
+    tokenized_s1 = cnn_dataset.map(
+                   ^^^^^^^^^^^^^^^^
+  File "C:\Users\16343\anaconda3\Lib\site-packages\datasets\dataset_dict.py", line 941, in map
+    dataset_dict[split] = dataset.map(
+                          ^^^^^^^^^^^^
+  File "C:\Users\16343\anaconda3\Lib\site-packages\datasets\arrow_dataset.py", line 557, in wrapper
+    out: Union["Dataset", "DatasetDict"] = func(self, *args, **kwargs)
+                                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\16343\anaconda3\Lib\site-packages\datasets\arrow_dataset.py", line 3074, in map
+    for rank, done, content in Dataset._map_single(**dataset_kwargs):
+  File "C:\Users\16343\anaconda3\Lib\site-packages\datasets\arrow_dataset.py", line 3547, in _map_single
+    os.remove(tmp_file.name)
+KeyboardInterrupt

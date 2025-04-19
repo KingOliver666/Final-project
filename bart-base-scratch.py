@@ -29,7 +29,7 @@ EPOCHS_STAGE1   = 20       # <- Number of epochs for stage 1
 EPOCHS_STAGE2   = 20       # <- Number of epochs for stage 2
 
 # Initialize W&B
-wandb.init(project="bart_summarization_base", name="bart_two_stage_run")
+wandb.init(project="bart_summarization_base_PC", name="bart_two_stage_run")
 
 # Load metrics
 rouge_metric = evaluate.load("rouge")
