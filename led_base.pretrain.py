@@ -20,9 +20,9 @@ MODEL_NAME      = "allenai/led-base-16384"
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 # ─── Hyperparameters ────────────────────────────────────────────────────────
-CHUNK_SIZE      = 4096                # tokens per input chunk
-STRIDE          = 512                 # overlap tokens (unused in map)
-BATCH_SIZE      = 4                   # per-device batch size
+CHUNK_SIZE      = 512                # tokens per input chunk
+STRIDE          = 128                 # overlap tokens (unused in map)
+BATCH_SIZE      = 2                   # per-device batch size
 STAGE1_MAX_SUM  = 250                 # summary length limit for Stage 1
 STAGE2_MAX_SUM  = 350                 # summary length limit for Stage 2
 EPOCHS_STAGE1   = 20                  # epochs in Stage 1
