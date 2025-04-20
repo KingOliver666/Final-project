@@ -11,7 +11,7 @@ from transformers import AutoTokenizer, AutoModelForSeq2SeqLM
 
 INPUT_CSV       = "filtered_combined_news_text.csv"
 OUTPUT_CSV      = "game_news_full_summaries_t5_11b_batched.csv"
-MODEL_NAME      = "google/t5-11b"
+MODEL_NAME      = "google-t5/t5-11b"
 DEVICE          = "cuda" if torch.cuda.is_available() else "cpu"
 CHUNK_SIZE      = 512     # tokens per chunk
 STRIDE          = 128     # overlap
