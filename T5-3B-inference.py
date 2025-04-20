@@ -18,7 +18,7 @@ DEVICE          = "cuda" if torch.cuda.is_available() else "cpu"
 # chunking
 CHUNK_SIZE      = 512
 STRIDE          = 128
-BATCH_SIZE      = 1       # keep this at 1 for minimal VRAM
+BATCH_SIZE      = 8       # keep this at 1 for minimal VRAM
 
 # two‑stage lengths
 STAGE1_MAX_SUM  = 250
