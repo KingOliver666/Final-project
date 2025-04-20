@@ -11,25 +11,24 @@ from transformers import (
 
 # ─── Configuration ────────────────────────────────────────────────────────────
 INPUT_CSV       = "filtered_combined_news_text.csv"
-OUTPUT_CSV      = "game_news_full_summaries_t5_3b_batched.csv"
-MODEL_NAME      = "t5-3b"  # HF hub id for T5‑3B
+OUTPUT_CSV      = "game_news_full_summaries_t5_large_batched.csv"
+MODEL_NAME      = "t5-large"
 DEVICE          = "cuda" if torch.cuda.is_available() else "cpu"
 
-# chunking
+# chunking parameters
 CHUNK_SIZE      = 512
 STRIDE          = 128
-BATCH_SIZE      = 8       # keep this at 1 for minimal VRAM
+BATCH_SIZE      = 2       # can increase if VRAM allows
 
-# two‑stage lengths
+# two-stage summary lengths
 STAGE1_MAX_SUM  = 250
 STAGE1_MIN_SUM  = 80
 STAGE2_MAX_SUM  = 350
 STAGE2_MIN_SUM  = 120
-
 PREFIX          = "summarize: "
 
 # ─── Quantization / Model Loading ────────────────────────────────────────────
-print(f"Loading {MODEL_NAME} in 8‑bit on {DEVICE}…")
+print(f"Loading {MODEL_NAME} in 8-bit on {DEVICE}…")
 bnb_config = BitsAndBytesConfig(
     load_in_8bit=True,
     llm_int8_threshold=6.0
@@ -38,7 +37,8 @@ tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME)
 model     = AutoModelForSeq2SeqLM.from_pretrained(
     MODEL_NAME,
     quantization_config=bnb_config,
-    device_map="auto"
+    device_map="auto",
+    torch_dtype=torch.float16
 )
 
 # ─── Helper Functions ─────────────────────────────────────────────────────────
@@ -51,6 +51,7 @@ def chunk_text(text):
         if end == len(toks):
             break
         start += CHUNK_SIZE - STRIDE
+
 
 def summarize_chunks(chunks, max_len, min_len):
     outs = []
@@ -74,8 +75,10 @@ def summarize_chunks(chunks, max_len, min_len):
         outs.append(tokenizer.decode(ids[0], skip_special_tokens=True))
     return outs
 
+
 def stage1_summaries(text):
     return summarize_chunks(chunk_text(text), STAGE1_MAX_SUM, STAGE1_MIN_SUM)
+
 
 def stage2_summary(chunks_out):
     combined = " ".join(chunks_out)
@@ -86,7 +89,7 @@ def main():
     os.makedirs(os.path.dirname(OUTPUT_CSV) or ".", exist_ok=True)
     print(f"Reading {INPUT_CSV}…")
     df = pd.read_csv(INPUT_CSV, encoding="utf-8")
-    texts = df.get("full_text", pd.Series()).fillna("").tolist()
+    texts = df.get("full_text", pd.Series()).fillna(" ").tolist()
 
     summaries = []
     for txt in tqdm(texts, desc="Summarizing"):
