@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """
-Fine‑tune google/pegasus-large in two stages with minimal checkpoints, logging ROUGE & BERTScore.
-Requires: pip install transformers datasets evaluate rouge_score bert_score sentencepiece
+Memory‑optimized two‑stage fine‑tuning of google/pegasus-large with minimal checkpoints.
+Requires:
+  pip install transformers datasets evaluate rouge_score bert_score sentencepiece accelerate
 """
 import torch
 from datasets import load_dataset
@@ -22,7 +23,7 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 # ─── Hyperparameters ────────────────────────────────────────────────────────
 CHUNK_SIZE      = 512   # max input tokens for Pegasus
-BATCH_SIZE      = 1      # per-device batch size
+BATCH_SIZE      = 1      # per-device batch size (reduced to save memory)
 STAGE1_MAX_SUM  = 250    # summary length for stage 1
 STAGE2_MAX_SUM  = 350    # summary length for stage 2
 EPOCHS_STAGE1   = 20     # epochs in stage 1
@@ -30,9 +31,9 @@ EPOCHS_STAGE2   = 20     # epochs in stage 2
 
 # ─── Preprocessing Function ─────────────────────────────────────────────────
 def preprocess_function(examples, tokenizer, max_target_length):
-    texts   = [str(x) for x in examples.get("text", [])]
+    texts = [str(x) for x in examples.get("text", [])]
     summaries = [str(x) for x in examples.get("summary", [])]
-    inputs = tokenizer(
+    model_inputs = tokenizer(
         texts,
         max_length=CHUNK_SIZE,
         padding="max_length",
@@ -45,13 +46,13 @@ def preprocess_function(examples, tokenizer, max_target_length):
             padding="max_length",
             truncation=True
         )
-    inputs["labels"] = labels["input_ids"]
-    return inputs
+    model_inputs["labels"] = labels["input_ids"]
+    return model_inputs
 
 # ─── Metrics Function ────────────────────────────────────────────────────────
 def compute_metrics(eval_pred, tokenizer, rouge, bertscore):
     preds, labels = eval_pred
-    decoded_preds  = tokenizer.batch_decode(preds, skip_special_tokens=True)
+    decoded_preds = tokenizer.batch_decode(preds, skip_special_tokens=True)
     decoded_labels = tokenizer.batch_decode(labels, skip_special_tokens=True)
 
     result = rouge.compute(predictions=decoded_preds, references=decoded_labels)
@@ -68,7 +69,12 @@ def run_stage(stage, init_model, max_sum_len, epochs,
               train_ds, val_ds,
               tokenizer, rouge, bertscore, data_collator):
     wandb.init(project="pegasus_game_news", name=f"pegasus_stage{stage}", reinit=True)
-    model = PegasusForConditionalGeneration.from_pretrained(init_model).to(device)
+    # load in half precision for lower memory
+    model = PegasusForConditionalGeneration.from_pretrained(
+        init_model,
+        torch_dtype=torch.float16
+    ).to(device)
+    model.gradient_checkpointing_enable()
 
     steps_per_epoch = max(1, len(train_ds) // BATCH_SIZE)
     save_steps = steps_per_epoch * epochs
@@ -80,6 +86,8 @@ def run_stage(stage, init_model, max_sum_len, epochs,
         num_train_epochs=epochs,
         per_device_train_batch_size=BATCH_SIZE,
         per_device_eval_batch_size=BATCH_SIZE,
+        gradient_accumulation_steps=2,
+        fp16=True,
         eval_steps=steps_per_epoch,
         save_steps=save_steps,
         save_total_limit=1,
@@ -117,12 +125,14 @@ if __name__ == "__main__":
     dataset = dataset.rename_column("brief_summary", "summary")
 
     # 2) Initialize tokenizer, metrics, collator
-    tokenizer  = PegasusTokenizer.from_pretrained(MODEL_NAME)
-    rouge      = evaluate.load("rouge")
-    bertscore  = BERTScorer(lang="en", rescale_with_baseline=False)
+    tokenizer = PegasusTokenizer.from_pretrained(MODEL_NAME)
+    rouge     = evaluate.load("rouge")
+    bertscore = BERTScorer(lang="en", rescale_with_baseline=False)
     data_collator = DataCollatorForSeq2Seq(
         tokenizer,
-        model=PegasusForConditionalGeneration.from_pretrained(MODEL_NAME).to(device),
+        model=PegasusForConditionalGeneration.from_pretrained(
+            MODEL_NAME, torch_dtype=torch.float16
+        ).to(device),
         label_pad_token_id=tokenizer.pad_token_id
     )
 
@@ -177,3 +187,4 @@ if __name__ == "__main__":
         bertscore=bertscore,
         data_collator=data_collator
     )
+    wandb.finish()
