@@ -23,7 +23,7 @@ device          = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 # ─── Hyperparameters ────────────────────────────────────────────────────────────
 CHUNK_SIZE      = 512   # max input tokens
-BATCH_SIZE      = 4     # per‑device batch size
+BATCH_SIZE      = 6     # per‑device batch size
 STAGE1_MAX_SUM  = 250   # summary length for stage 1
 STAGE2_MAX_SUM  = 350   # summary length for stage 2
 EPOCHS_STAGE1   = 20
